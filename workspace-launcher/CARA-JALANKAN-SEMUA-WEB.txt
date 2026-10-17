@@ -1,0 +1,33 @@
+SATU KLIK UNTUK SEMUA WEB
+
+Klik dua kali START-SEMUA-WEB.bat di folder Private WEB.
+
+Launcher menyalakan atau memakai ulang:
+1. Ecosystem Hub             http://127.0.0.1:8764/
+2. Local AI Control Center   http://127.0.0.1:8765/
+3. SignalDeck                http://127.0.0.1:8767/
+4. DevPulse Portfolio        http://127.0.0.1:3100/
+
+Browser membuka keempat halaman. Dashboard preview DevPulse ada pada
+http://127.0.0.1:3100/preview/overview atau pilih Workspace pada bar review.
+
+Layanan yang sudah aktif tidak digandakan. Bila port ditempati layanan lain,
+launcher menampilkan konflik dan tidak memaksa menghentikan proses tersebut.
+
+Jika launcher memulai DevPulse, biarkan terminal DevPulse tetap terbuka.
+Ctrl+C pada terminal itu menghentikan DevPulse. Untuk tiga layanan ekosistem,
+gunakan Ecosystem v2.0\KELOLA-EKOSISTEM.bat > Stop.
+Menutup tab browser saja tidak menghentikan server.
+
+Python 3.10+ dan Node.js 20.9+/npm diperlukan. Dependency yang belum tersedia
+dipasang otomatis; instalasi pertama mungkin memerlukan internet.
+
+Jangan pindahkan hanya file BAT. Pertahankan folder .web-launcher,
+Ecosystem v2.0, dan DevWev Portofolio di sampingnya.
+
+Opsional dari PowerShell pada folder Private WEB:
+.\START-SEMUA-WEB.bat --status
+.\START-SEMUA-WEB.bat --no-browser
+
+DevPulse tetap preview R0. Launcher ini tidak menghubungkan akun provider,
+membuka akses LAN, atau mengaktifkan integrasi telemetry/hardware.

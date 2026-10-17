@@ -1,0 +1,7 @@
+Menutup browser tidak menghentikan layanan.
+Gunakan KELOLA-EKOSISTEM.bat > Stop atau py -3 launch_all.py stop.
+Launcher hanya meminta shutdown instance miliknya; tidak force-kill proses lain.
+Layanan yang dimulai manual: Ctrl+C pada terminal pemilik.
+Status: py -3 launch_all.py status
+Log: py -3 launch_all.py logs
+Port terpusat di ecosystem.json. Stop sebelum mengganti port, lalu start lagi.

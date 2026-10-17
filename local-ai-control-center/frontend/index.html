@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local AI Control Center · Local Work</title>
+  <link rel="stylesheet" href="/static/app.css?v=2.1.0" />
+<link rel="stylesheet" href="/ecosystem-nav.css?v=2.1.0"></head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">AI</div>
+        <div>
+          <div class="brand-title">Local AI</div>
+          <div class="brand-sub">CONTROL CENTER</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-page="dashboard"><span>▦</span><b>Dashboard</b></button>
+
+        <div class="nav-label">CHAT</div>
+        <button class="nav-item" data-page="chat"><span>◉</span>Local Chat</button>
+        <button class="nav-item" data-page="agent"><span>◆</span>Local Agent <em class="beta">BETA</em></button>
+
+        <div class="nav-label">RUNTIME</div>
+        <button class="nav-item" data-page="server"><span>●</span>Server</button>
+        <button class="nav-item" data-page="models"><span>◇</span>Models</button>
+        <button class="nav-item" data-page="runtime"><span>⚙</span>Runtime Settings</button>
+
+        <div class="nav-label">CLIENTS</div>
+        <button class="nav-item" data-page="clients"><span>◎</span>Hermes / OpenClaw</button>
+
+        <div class="nav-label">HARDWARE</div>
+        <button class="nav-item" data-page="hardware"><span>▣</span>GPU & Memory</button>
+
+        <div class="nav-label">ANALYTICS</div>
+        <button class="nav-item" data-page="usage"><span>▤</span>Usage & Insights</button>
+        <button class="nav-item" data-page="sessions"><span>◫</span>Sessions</button>
+        <button class="nav-item" data-page="performance"><span>◩</span>Performance</button>
+        <button class="nav-item" data-page="charts"><span>⌁</span>Chart Studio</button>
+
+        <div class="nav-label">SYSTEM</div>
+        <button class="nav-item" data-page="logs"><span>≡</span>Logs</button>
+        <button class="nav-item" data-page="settings"><span>⚙</span>Settings</button>
+
+        <div class="nav-label">ANOTHER APPS · ECOSYSTEM</div>
+        <a class="nav-item app-bridge-link" id="hub-link" href="#" data-ecosystem-app="hub" aria-disabled="true" title="Kembali ke Local Work & Setting Hub">
+          <span class="bridge-icon">◈</span><b>Local Work & Setting Hub</b><i class="bridge-state" title="Buka Ecosystem Hub">●</i>
+        </a>
+        <a class="nav-item app-bridge-link" id="signaldeck-link" href="#" data-ecosystem-app="signaldeck" aria-disabled="true" title="Beralih ke SignalDeck Hardware Monitor">
+          <span class="bridge-icon">▤</span><b>SignalDeck Hardware Monitor</b>
+          <i class="bridge-state" id="signaldeck-state" title="Memeriksa aplikasi">●</i>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="mini-status"><span id="sideDot" class="dot offline"></span><span id="sideStatus">Runtime offline</span></div>
+        <div class="tiny">Local Work v2.1.0 · localhost only</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn" id="toggleSidebar">☰</button>
+        <div class="crumb"><span>Workspace</span><i>/</i><b id="pageCrumb">Dashboard</b></div>
+        <div class="top-spacer"></div>
+        <a class="ecosystem-top-link" href="#" data-ecosystem-app="hub" aria-disabled="true" title="Halaman utama ekosistem">◈ Ecosystem Hub</a>
+        <a class="ecosystem-top-link" id="signaldeck-top-link" href="#" data-ecosystem-app="signaldeck" aria-disabled="true" title="Buka SignalDeck">⌁ SignalDeck ↗</a>
+        <div class="global-pill" id="globalClient"><span class="dot idle"></span><span>Idle</span></div>
+        <div class="top-context" id="topContext" title="Context window aktif">
+          <span>Context</span><b id="topContextValue">0 / 64K</b>
+          <div class="microbar"><i id="topContextBar"></i></div>
+        </div>
+        <div class="clock" id="clock">--:--:--</div>
+      </header>
+
+      <div class="content">
+        <!-- DASHBOARD -->
+        <section class="page active" id="page-dashboard">
+          <div class="page-intro">
+            <div>
+              <div class="eyebrow">RINGKASAN LOCAL AI</div>
+              <h1>Semua inference, dalam kendali.</h1>
+              <p>Pantau runtime, context, token throughput, dan resource laptop secara real-time.</p>
+            </div>
+            <button class="primary" data-go="chat">＋ Mulai Local Chat</button>
+          </div>
+
+          <div class="runtime-strip">
+            <div><span id="runtimeStripDot" class="dot offline"></span><b id="runtimeStrip">Runtime belum terhubung</b></div>
+            <div class="strip-sep"></div>
+            <span id="runtimeModel">Model: —</span>
+            <div class="strip-sep"></div>
+            <span id="runtimeContext">Context: 64K</span>
+            <button class="text-btn" data-go="server">Buka runtime →</button>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi-card accent-blue">
+              <div class="kpi-head"><span>Status</span><span class="card-icon">◉</span></div>
+              <strong id="kpiState">IDLE</strong>
+              <small id="kpiStateSub">Menunggu request</small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>Generation</span><span class="card-icon">↗</span></div>
+              <strong><span id="kpiGen">—</span> <em>tok/s</em></strong>
+              <small id="kpiGenSub">Kecepatan output</small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>Prompt</span><span class="card-icon">↯</span></div>
+              <strong><span id="kpiPrompt">—</span> <em>tok/s</em></strong>
+              <small>Kecepatan input/context</small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head"><span>Server</span><span class="card-icon">⌁</span></div>
+              <strong id="kpiUptime">—</strong>
+              <small>Runtime uptime</small>
+            </article>
+          </div>
+
+          <div class="grid-2 chart-row">
+            <article class="panel span-2">
+              <div class="panel-head">
+                <div><div class="eyebrow">INFERENCE</div><h2>Generation speed</h2><p>Pergerakan token per detik selama sesi aktif.</p></div>
+                <div class="segmented"><button class="active" data-window="60">60s</button><button data-window="300">5m</button><button data-window="900">15m</button></div>
+              </div>
+              <div class="chart-wrap"><canvas id="tpsChart"></canvas><div class="chart-empty" id="tpsEmpty">Belum ada sampel generation.</div></div>
+            </article>
+          </div>
+
+          <div class="resource-grid" id="resourceGrid">
+            <article class="resource-card" id="contextCard">
+              <div class="resource-title">Context Window</div>
+              <div class="ring" id="contextRing"><div><b id="contextPct">0%</b><small>USED</small></div></div><canvas class="resource-viz hidden" id="contextViz"></canvas>
+              <div class="resource-main" id="contextMain">0 / 64K</div>
+              <div class="resource-sub" id="contextSub">64K remaining</div>
+            </article>
+            <article class="resource-card" id="gpu0Card">
+              <div class="resource-title">GPU 0</div>
+              <div class="ring" id="gpu0Ring"><div><b id="gpu0Pct">0%</b><small>VRAM</small></div></div><canvas class="resource-viz hidden" id="gpu0Viz"></canvas>
+              <div class="resource-main" id="gpu0Main">—</div>
+              <div class="resource-sub" id="gpu0Sub">Menunggu NVIDIA</div>
+            </article>
+            <article class="resource-card" id="gpu1Card">
+              <div class="resource-title">GPU 1</div>
+              <div class="ring" id="gpu1Ring"><div><b id="gpu1Pct">0%</b><small>VRAM</small></div></div><canvas class="resource-viz hidden" id="gpu1Viz"></canvas>
+              <div class="resource-main" id="gpu1Main">—</div>
+              <div class="resource-sub" id="gpu1Sub">Menunggu NVIDIA</div>
+            </article>
+            <article class="resource-card" id="ramCard">
+              <div class="resource-title">System RAM</div>
+              <div class="ring" id="ramRing"><div><b id="ramPct">0%</b><small>USED</small></div></div><canvas class="resource-viz hidden" id="ramViz"></canvas>
+              <div class="resource-main" id="ramMain">—</div>
+              <div class="resource-sub" id="ramSub">CPU —</div>
+            </article>
+          </div>
+
+          <div class="grid-2 lower-grid">
+            <article class="panel">
+              <div class="panel-head compact"><div><div class="eyebrow">CLIENTS</div><h2>Connected clients</h2></div><button class="text-btn" data-go="clients">Detail →</button></div>
+              <div class="client-list" id="dashClients"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head compact"><div><div class="eyebrow">LAST INFERENCE</div><h2>Aktivitas terbaru</h2></div><button class="text-btn" data-go="sessions">History →</button></div>
+              <div id="lastInference" class="last-inference empty-state">Belum ada inference yang tercatat.</div>
+            </article>
+          </div>
+        </section>
+
+        <!-- LOCAL CHAT -->
+        <section class="page" id="page-chat">
+          <div class="chat-layout">
+            <aside class="chat-sidebar">
+              <button class="primary full" id="newChatBtn">＋ New Chat</button>
+              <div class="chat-session-list" id="chatSessions"></div>
+            </aside>
+            <div class="chat-main">
+              <div class="chat-header">
+                <div><div class="eyebrow">LOCAL CHAT</div><h2 id="chatTitle">New Chat</h2><p id="chatMeta">Langsung ke model lokal via llama-server.</p></div>
+                <div class="chat-context-mini"><b id="chatContextValue">0 / 64K</b><div class="microbar large"><i id="chatContextBar"></i></div><small id="chatContextRemain">64K remaining</small></div>
+              </div>
+              <div class="messages" id="chatMessages"><div class="welcome-card"><b>Local Chat siap.</b><span>Pilih atau buat sesi, pastikan llama-server terhubung, lalu mulai berbicara dengan model lokal.</span></div></div>
+              <div class="composer-wrap">
+                <div class="generation-settings">
+                  <label>Temperature <input id="temperature" type="number" min="0" max="2" step="0.05" value="0.7"></label>
+                  <label>Top P <input id="topP" type="number" min="0" max="1" step="0.01" value="0.95"></label>
+                  <label>Max output <input id="maxTokens" type="number" min="64" max="32768" step="64" value="4096"></label>
+                </div>
+                <div class="composer"><textarea id="chatInput" rows="2" placeholder="Ketik pesan ke model lokal..."></textarea><button class="send-btn" id="sendChatBtn">➤</button></div>
+              </div>
+            </div>
+            <aside class="live-rail">
+              <div class="rail-title">LIVE INFERENCE</div>
+              <div class="rail-state" id="railState">IDLE</div>
+              <div class="rail-metric"><span>Generation</span><b><i id="railGen">—</i> tok/s</b></div>
+              <div class="rail-metric"><span>Prompt</span><b><i id="railPrompt">—</i> tok/s</b></div>
+              <div class="rail-divider"></div>
+              <div class="mini-hw" id="railHardware"></div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- LOCAL AGENT -->
+        <section class="page" id="page-agent">
+          <div class="page-intro slim">
+            <div><div class="eyebrow">LOCAL AGENT · BETA</div><h1>Model lokal dengan tools.</h1><p>Agent berjalan melalui backend lokal; izin tool ditentukan oleh permission profile.</p></div>
+            <select id="agentPermission" class="select"><option value="safe">Safe · read only</option><option value="standard">Standard · file/app</option><option value="full">Full Control · PowerShell</option></select>
+          </div>
+          <div class="agent-grid">
+            <article class="panel agent-chat-panel">
+              <div class="panel-head compact"><div><h2>Agent conversation</h2><p id="agentSessionLabel">Belum ada sesi agent.</p></div><button class="secondary" id="newAgentBtn">New Agent Session</button></div>
+              <div class="messages agent-messages" id="agentMessages"></div>
+              <div class="composer"><textarea id="agentInput" rows="2" placeholder="Contoh: cek folder Y:\GFL2_AI dan ringkas file yang ada..."></textarea><button class="send-btn" id="sendAgentBtn">➤</button></div>
+            </article>
+            <article class="panel activity-panel">
+              <div class="panel-head compact"><div><div class="eyebrow">TRANSPARENCY</div><h2>Agent Activity</h2></div><span class="status-chip" id="agentState">IDLE</span></div>
+              <div class="activity-timeline" id="agentActivity"><div class="empty-state">Tool call dan hasilnya akan muncul di sini.</div></div>
+              <div class="permission-note"><b>Permission enforcement</b><span>Safe = baca saja. Standard dapat membuat file/membuka app. Full memungkinkan PowerShell.</span></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- SERVER -->
+        <section class="page" id="page-server">
+          <div class="page-intro slim"><div><div class="eyebrow">RUNTIME SERVER</div><h1>llama-server</h1><p>Kelola satu runtime inference pusat untuk Web, Hermes, dan OpenClaw.</p></div><div class="button-row"><button class="secondary" id="stopServerBtn">Stop</button><button class="primary" id="startServerBtn">Start Server</button></div></div>
+          <div class="grid-2">
+            <article class="panel"><div class="panel-head compact"><div><h2>Status runtime</h2><p>Managed dan external server.</p></div></div><div id="serverStatus" class="detail-list"></div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>OpenAI endpoint</h2><p>Gunakan gateway untuk telemetry client yang lebih lengkap.</p></div></div><div class="endpoint-box"><span>Hermes</span><code id="hermesEndpoint">http://127.0.0.1:8765/gateway/hermes/v1</code><button class="copy" data-copy-target="hermesEndpoint">Copy</button></div><div class="endpoint-box"><span>OpenClaw</span><code id="openclawEndpoint">http://127.0.0.1:8765/gateway/openclaw/v1</code><button class="copy" data-copy-target="openclawEndpoint">Copy</button></div></article>
+          </div>
+          <article class="panel top-gap"><div class="panel-head compact"><div><div class="eyebrow">BOOT / HEALTH</div><h2>Runtime log</h2></div><button class="text-btn" data-go="logs">Full log →</button></div><pre class="log-box small" id="serverLog">No log.</pre></article>
+        </section>
+
+        <!-- MODELS -->
+        <section class="page" id="page-models">
+          <div class="page-intro slim"><div><div class="eyebrow">MODEL LIBRARY</div><h1>GGUF Models</h1><p>Model ditemukan otomatis dari folder scan. Sidecar MTP kecil ditandai terpisah.</p></div><button class="primary" id="rescanModelsBtn">↻ Scan Models</button></div>
+          <div class="model-list" id="modelList"><div class="empty-state">Scanning...</div></div>
+        </section>
+
+        <!-- RUNTIME SETTINGS -->
+        <section class="page" id="page-runtime">
+          <div class="page-intro slim"><div><div class="eyebrow">RUNTIME SETTINGS</div><h1>Inference configuration</h1><p>Pengaturan startup membutuhkan restart server untuk diterapkan.</p></div><button class="primary" id="applyRestartBtn">Apply & Restart</button></div>
+          <article class="panel">
+            <div class="settings-section"><label class="setting-label">Context Window</label><div class="context-presets" id="contextPresets"></div><small>Preset 1K sampai maksimum 128K.</small></div>
+            <div class="form-grid">
+              <label>Model path<input id="rtModelPath" type="text" placeholder="C:\Models\model.gguf"></label>
+              <label>llama-server path<input id="rtServerPath" type="text" placeholder="Kosong = cari dari PATH"></label>
+              <label>GPU Layers<input id="rtGpuLayers" type="text" value="auto"></label>
+              <label>Main GPU<input id="rtMainGpu" type="number" min="0" value="0"></label>
+              <label>Tensor Split<input id="rtTensorSplit" type="text" placeholder="Contoh: 0.65,0.35"></label>
+              <label>Parallel Slots<input id="rtParallel" type="number" min="1" max="8" value="1"></label>
+              <label>KV Cache K<select id="rtCacheK"><option>q8_0</option><option>q4_0</option><option>f16</option></select></label>
+              <label>KV Cache V<select id="rtCacheV"><option>q8_0</option><option>q4_0</option><option>f16</option></select></label>
+              <label>Batch<input id="rtBatch" type="number" value="2048"></label>
+              <label>uBatch<input id="rtUBatch" type="number" value="512"></label>
+              <label>Fit target (MiB)<input id="rtFitTarget" type="number" value="1536"></label>
+              <label>Extra args<input id="rtExtra" type="text" placeholder="Optional"></label>
+            </div>
+            <div class="toggle-row"><label class="toggle"><input id="rtFlash" type="checkbox" checked><span></span>Flash Attention</label><label class="toggle"><input id="rtMtp" type="checkbox"><span></span>MTP / draft-mtp</label><label class="toggle"><input id="rtFit" type="checkbox" checked><span></span>Auto Fit</label></div>
+            <div class="change-note">↻ Perubahan di halaman ini diterapkan melalui restart managed llama-server.</div>
+          </article>
+        </section>
+
+        <!-- CLIENTS -->
+        <section class="page" id="page-clients">
+          <div class="page-intro slim"><div><div class="eyebrow">EXTERNAL CLIENTS</div><h1>Hermes & OpenClaw</h1><p>Deteksi proses lokal dan request yang melewati Local AI Gateway.</p></div></div>
+          <div class="client-cards" id="clientCards"></div>
+          <article class="panel top-gap"><div class="panel-head compact"><div><h2>Gateway setup</h2><p>Arahkan base URL client ke endpoint berikut agar context/token logging lebih lengkap.</p></div></div><div class="gateway-help"><code>Hermes → http://127.0.0.1:8765/gateway/hermes/v1</code><code>OpenClaw → http://127.0.0.1:8765/gateway/openclaw/v1</code></div></article>
+        </section>
+
+        <!-- HARDWARE -->
+        <section class="page" id="page-hardware">
+          <div class="page-intro slim"><div><div class="eyebrow">HARDWARE TELEMETRY</div><h1>GPU & System Memory</h1><p>Telemetry utama memakai NVML bila tersedia, lalu fallback ke nvidia-smi.</p></div></div>
+          <div class="hardware-cards" id="hardwareCards"></div>
+          <article class="panel top-gap"><div class="panel-head compact"><div><h2>GPU utilization history</h2><p>Riwayat singkat sesi dashboard saat ini.</p></div></div><div class="chart-wrap tall"><canvas id="gpuChart"></canvas></div></article>
+        </section>
+
+        <!-- USAGE -->
+        <section class="page" id="page-usage">
+          <div class="page-intro slim">
+            <div><div class="eyebrow">USAGE & INSIGHTS</div><h1>Aktivitas Local AI sepanjang waktu</h1><p>Token, model, server uptime, inference aktif, client, dan runtime history dari SQLite.</p></div>
+            <div class="segmented usage-range" id="usageRange"><button data-range="1d">1 Hari</button><button data-range="1w">1 Minggu</button><button data-range="1m" class="active">1 Bulan</button><button data-range="3m">3 Bulan</button><button data-range="6m">6 Bulan</button><button data-range="1y">1 Tahun</button><button data-range="all">Sepanjang Waktu</button></div>
+          </div>
+          <div class="usage-kpis" id="usageKpis"></div>
+          <article class="panel top-gap">
+            <div class="panel-head compact"><div><div class="eyebrow">AKTIVITAS TOKEN</div><h2>Activity heatmap</h2><p>Semakin kuat intensitas kotak, semakin banyak token dipakai pada hari tersebut.</p></div><div class="insight-mini" id="usageStreak"></div></div>
+            <div class="heatmap-wrap"><div class="usage-heatmap" id="usageHeatmap"></div><div class="heat-legend"><span>Lebih sedikit</span><i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><span>Lebih banyak</span></div></div>
+          </article>
+          <div class="analytics-grid top-gap">
+            <article class="panel"><div class="panel-head compact"><div><h2>Token sepanjang periode</h2><p>Input + output token per hari.</p></div><span class="chart-chip" id="usageTokenType">WAVE</span></div><div class="chart-wrap medium"><canvas id="usageTokenChart"></canvas></div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>Token per model</h2><p>Kontribusi model terhadap total penggunaan.</p></div><span class="chart-chip" id="usageModelType">BAR</span></div><div class="chart-wrap medium"><canvas id="usageModelChart"></canvas></div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>Usage by client</h2><p>Hermes, OpenClaw, Web Chat, dan Agent.</p></div><span class="chart-chip" id="usageClientType">DONUT</span></div><div class="chart-wrap medium"><canvas id="usageClientChart"></canvas></div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>Runtime vs inference</h2><p>Loaded, active inference, dan idle-loaded.</p></div><span class="chart-chip">STACKED</span></div><div class="chart-wrap medium"><canvas id="usageRuntimeChart"></canvas></div></article>
+          </div>
+          <div class="grid-2 top-gap">
+            <article class="panel table-panel"><div class="panel-head compact pad-head"><div><h2>Model usage</h2><p>Berapa lama model dimuat, aktif, dan berapa token yang diproses.</p></div></div><div class="table-wrap"><table><thead><tr><th>Model</th><th>Loaded</th><th>Inference</th><th>Idle</th><th>Input</th><th>Output</th><th>Total</th><th>Avg TPS</th><th>Runs</th></tr></thead><tbody id="usageModelBody"></tbody></table></div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>Runtime history</h2><p>Model apa yang dimuat dan berapa lama server lokal menyala.</p></div></div><div class="runtime-timeline" id="usageTimeline"></div></article>
+          </div>
+        </section>
+
+        <!-- CHART STUDIO -->
+        <section class="page" id="page-charts">
+          <div class="page-intro slim"><div><div class="eyebrow">CHART STUDIO</div><h1>Preset & custom visualization</h1><p>Pilih preset lalu ubah diagram satu per satu. Pengaturan tersimpan dan langsung diterapkan ke dashboard serta Usage.</p></div><button class="primary" id="saveChartsBtn">Save Visualization</button></div>
+          <div class="preset-grid" id="chartPresetGrid">
+            <button class="preset-card active" data-preset="telemetry-mix"><b>Telemetry Mix</b><span>Wave + gauge + donut + bar. Preset utama yang menunjukkan variasi diagram.</span><div class="preset-mini"><i class="wave"></i><i class="gauge"></i><i class="donut"></i><i class="bars"></i></div></button>
+            <button class="preset-card" data-preset="wave-focus"><b>Wave Focus</b><span>Dominan gelombang/area untuk melihat perubahan realtime.</span><div class="preset-mini"><i class="wave"></i><i class="wave"></i><i class="wave"></i><i class="line"></i></div></button>
+            <button class="preset-card" data-preset="performance-lines"><b>Performance Lines</b><span>Garis dan sparkline untuk telemetry teknis yang rapat.</span><div class="preset-mini"><i class="line"></i><i class="line"></i><i class="line"></i><i class="bars"></i></div></button>
+            <button class="preset-card" data-preset="capacity"><b>Capacity</b><span>Gauge, donut, dan bar untuk fokus kapasitas resource.</span><div class="preset-mini"><i class="gauge"></i><i class="donut"></i><i class="bars"></i><i class="gauge"></i></div></button>
+            <button class="preset-card" data-preset="minimal"><b>Minimal</b><span>Visual sederhana untuk penggunaan sehari-hari.</span><div class="preset-mini"><i class="line"></i><i class="bars"></i><i class="donut"></i><i class="line"></i></div></button>
+          </div>
+          <div class="grid-2 top-gap">
+            <article class="panel"><div class="panel-head compact"><div><h2>Dashboard widgets</h2><p>Diagram setiap resource dapat berbeda.</p></div></div><div class="chart-settings">
+              <label>Generation speed<select id="chartGeneration"><option value="wave">Wave / Area</option><option value="line">Line</option><option value="step">Step</option><option value="dots">Dots</option></select></label>
+              <label>Context<select id="chartContext"><option value="gauge">Gauge</option><option value="donut">Donut</option><option value="wave">Wave</option><option value="bar">Bar</option><option value="line">Sparkline</option></select></label>
+              <label>GPU 0<select id="chartGpu0"><option value="wave">Wave</option><option value="gauge">Gauge</option><option value="donut">Donut</option><option value="bar">Bar</option><option value="line">Sparkline</option></select></label>
+              <label>GPU 1<select id="chartGpu1"><option value="donut">Donut</option><option value="wave">Wave</option><option value="gauge">Gauge</option><option value="bar">Bar</option><option value="line">Sparkline</option></select></label>
+              <label>RAM<select id="chartRam"><option value="bar">Bar</option><option value="wave">Wave</option><option value="gauge">Gauge</option><option value="donut">Donut</option><option value="line">Sparkline</option></select></label>
+            </div></article>
+            <article class="panel"><div class="panel-head compact"><div><h2>Usage widgets</h2><p>Pilih tampilan analytics sesuai kebutuhan.</p></div></div><div class="chart-settings">
+              <label>Token trend<select id="chartUsageTokens"><option value="wave">Wave / Area</option><option value="line">Line</option><option value="bar">Bar</option><option value="step">Step</option></select></label>
+              <label>Model usage<select id="chartUsageModels"><option value="bar">Bar</option><option value="donut">Donut</option><option value="line">Line</option></select></label>
+              <label>Client usage<select id="chartUsageClients"><option value="donut">Donut</option><option value="bar">Bar</option></select></label>
+            </div><div class="security-banner"><b>Live preview</b><span>Perubahan selector langsung dipreview dan baru disimpan permanen setelah Save Visualization.</span></div></article>
+          </div>
+          <article class="panel top-gap"><div class="panel-head compact"><div><h2>Preset preview</h2><p>Contoh visual dari konfigurasi yang sedang dipilih.</p></div></div><div class="chart-preview-grid"><div><span>Generation</span><canvas id="previewGeneration"></canvas></div><div><span>Context</span><canvas id="previewContext"></canvas></div><div><span>GPU 0</span><canvas id="previewGpu0"></canvas></div><div><span>RAM</span><canvas id="previewRam"></canvas></div></div></article>
+        </section>
+
+        <!-- SESSIONS -->
+        <section class="page" id="page-sessions">
+          <div class="page-intro slim"><div><div class="eyebrow">SESSION & INFERENCE HISTORY</div><h1>Riwayat penggunaan model</h1><p>Context, model, client, token, dan kecepatan dicatat ke SQLite.</p></div><button class="secondary" id="refreshHistoryBtn">↻ Refresh</button></div>
+          <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Client</th><th>Model</th><th>Context</th><th>Prompt</th><th>Output</th><th>Gen TPS</th><th>Duration</th></tr></thead><tbody id="historyBody"></tbody></table></div></article>
+        </section>
+
+        <!-- PERFORMANCE -->
+        <section class="page" id="page-performance">
+          <div class="page-intro slim"><div><div class="eyebrow">ANALYTICS</div><h1>Model performance</h1><p>Agregasi hasil inference aktual di hardware Anda sendiri.</p></div></div>
+          <div class="compare-grid" id="compareGrid"></div>
+          <article class="panel top-gap"><div class="panel-head compact"><div><h2>Average generation TPS</h2><p>Dikelompokkan berdasarkan model + quant.</p></div></div><div class="bar-chart" id="modelBars"></div></article>
+        </section>
+
+        <!-- LOGS -->
+        <section class="page" id="page-logs">
+          <div class="page-intro slim"><div><div class="eyebrow">SYSTEM LOGS</div><h1>Runtime transparency</h1><p>Log llama-server dan event control center.</p></div><button class="secondary" id="refreshLogsBtn">↻ Refresh</button></div>
+          <div class="grid-2"><article class="panel"><div class="panel-head compact"><h2>llama-server.log</h2></div><pre class="log-box" id="llamaLog"></pre></article><article class="panel"><div class="panel-head compact"><h2>Control Center Events</h2></div><div class="event-list" id="eventList"></div></article></div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="page" id="page-settings">
+          <div class="page-intro slim"><div><div class="eyebrow">APPLICATION SETTINGS</div><h1>Local AI Control Center</h1><p>Semua setting disimpan lokal pada config/app.json.</p></div><button class="primary" id="saveSettingsBtn">Save Settings</button></div>
+          <article class="panel"><div class="form-grid"><label>Model scan paths<textarea id="settingScanPaths" rows="5"></textarea><small>Satu folder per baris.</small></label><label>Hermes log path<input id="settingHermesLog" type="text"></label><label>Telemetry interval (ms)<input id="settingTelemetry" type="number" min="200" max="5000"></label><label>Default Agent Permission<select id="settingAgentPermission"><option value="safe">Safe</option><option value="standard">Standard</option><option value="full">Full Control</option></select></label></div><div class="security-banner"><b>🔒 Local-first</b><span>Default bind adalah 127.0.0.1. Jangan expose dashboard ke LAN/internet tanpa autentikasi tambahan.</span></div></article>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toasts"></div>
+  <script src="/static/app.js?v=2.1.0"></script>
+<script src="/ecosystem-nav.js?v=2.1.0" defer></script></body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="SignalDeck — dashboard telemetry hardware lokal dengan CPU, RAM, multi-GPU, jaringan, disk dan grafik real-time." />
+  <title>SignalDeck — Hardware Intelligence</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/static/app.css?v=2.1.0" />
+  <link rel="stylesheet" href="/static/tuning.css?v=2.1.0" />
+<link rel="stylesheet" href="/ecosystem-nav.css?v=2.1.0"></head>
+<body data-theme="dark" data-mode="full">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
+      <a class="brand" href="#overview" aria-label="SignalDeck Beranda">
+        <div class="brand-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 17h7l3-9 5 17 3-8h6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="27" cy="7" r="2" fill="currentColor"/></svg></div>
+        <div><div class="brand-name">SIGNAL<span>DECK</span></div><div class="brand-sub">HARDWARE INTELLIGENCE</div></div>
+      </a>
+      <div class="side-group-heading">WORKSPACE</div>
+      <nav id="sidebar-nav">
+        <button class="nav-link selected" data-page="overview"><span class="nav-ico" data-icon="layout"></span><span>Overview</span><span class="nav-shortcut">01</span></button>
+        <button class="nav-link" data-page="cpu"><span class="nav-ico" data-icon="cpu"></span><span>Processor</span></button>
+        <button class="nav-link" data-page="ram"><span class="nav-ico" data-icon="memory"></span><span>Memory</span></button>
+        <button class="nav-link" data-page="gpu"><span class="nav-ico" data-icon="gpu"></span><span>Graphics</span><span class="nav-count" id="nav-gpus">—</span></button>
+        <button class="nav-link" data-page="tuning"><span class="nav-ico" data-icon="sliders"></span><span>Hardware Tuning Studio</span><span class="nav-count">NEW</span></button>
+        <button class="nav-link" data-page="storage"><span class="nav-ico" data-icon="storage"></span><span>Storage</span></button>
+        <button class="nav-link" data-page="network"><span class="nav-ico" data-icon="network"></span><span>Network</span></button>
+      </nav>
+      <div class="side-group-heading space-above">DIAGNOSTICS</div>
+      <nav>
+        <button class="nav-link" data-page="sensors"><span class="nav-ico" data-icon="sliders"></span><span>Sensor Explorer</span></button>
+        <button class="nav-link" data-page="sources"><span class="nav-ico" data-icon="layers"></span><span>Data Sources</span></button>
+      </nav>
+      <div class="side-group-heading space-above">ANOTHER APPS</div>
+      <nav><a class="nav-link bridge-nav-link" id="ecosystem-hub-link" href="#" data-ecosystem-app="hub" aria-disabled="true" title="Kembali ke Ecosystem Hub"><span class="nav-ico">◈</span><span class="bridge-title">Local Work & Setting Hub</span></a></nav>
+      <nav aria-label="Aplikasi terhubung">
+        <a class="nav-link bridge-nav-link" id="local-ai-link" href="#" data-ecosystem-app="ai" aria-disabled="true" title="Kembali ke Local AI Control Center">
+          <span class="nav-ico bridge-ai-mark">AI</span>
+          <span class="bridge-title">Local AI Control Center</span>
+          <span class="bridge-status" id="local-ai-status" aria-label="Memeriksa status aplikasi"></span>
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <div class="small-label">DISPLAY MODE</div>
+        <div class="segmented mode-segment" role="group" aria-label="Mode tampilan">
+          <button data-mode-choice="simple" id="simple-mode">Simple</button>
+          <button data-mode-choice="full" id="full-mode" class="active">Full UI</button>
+        </div>
+        <div class="theme-row"><span class="small-label">APPEARANCE</span><button class="icon-btn" id="theme-btn" aria-label="Ganti tema" title="Ganti tema"></button></div>
+        <div class="agent-status"><span class="live-point" id="side-dot"></span><div><b id="source-main">Menghubungkan sensor</b><small id="source-secondary">Mempersiapkan backend</small></div><span class="arrow-north">↗</span></div>
+        <div class="version-label">SIGNALDECK CORE <span>v2.1.0</span></div>
+      </div>
+    </aside>
+    <div class="mobile-backdrop" id="backdrop"></div>
+    <main class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn mobile-menu" id="mobile-menu" aria-label="Buka navigasi"><span data-icon="menu"></span></button>
+          <div class="crumb">WORKSPACE <span>/</span> <b id="crumb-page">OVERVIEW</b></div>
+        </div>
+        <div class="top-actions"><a class="eco-shortcut" href="#" data-ecosystem-app="hub">Hub</a><a class="eco-shortcut" href="#" data-ecosystem-app="ai">Local AI</a>
+          <span class="device-pill"><span data-icon="monitor"></span><span id="host-name">LOCAL DEVICE</span></span>
+          <span class="live-pill"><i id="head-dot"></i><span id="head-status">CONNECTING</span></span>
+          <button class="icon-btn" id="pause-btn" title="Jeda/pulihkan update layar" aria-label="Jeda update layar"><span data-icon="pause"></span></button>
+          <button class="button button-outline" id="export-btn"><span data-icon="download"></span><span class="button-text">Export CSV</span></button>
+        </div>
+      </header>
+      <div class="main-content">
+        <div id="connection-banner" class="connection-banner hidden" role="alert"><span data-icon="alert"></span><span id="banner-message"></span></div>
+        <div id="demo-banner" class="demo-banner hidden"><span data-icon="flask"></span> SIMULATION MODE <span>— angka contoh, bukan pembacaan sensor komputer Anda</span></div>
+        <div class="page-intro"><div><div class="eyebrow">SYSTEM TELEMETRY <span class="eyebrow-line"></span> <span id="today-display"></span></div><h1 id="page-title">Hardware Overview<span class="title-punct">.</span></h1><p id="page-description">Monitor seluruh perangkat keras dalam satu control center.</p></div><div class="intro-tools"><span class="label-time">TIME RANGE</span><select id="period-select" aria-label="Rentang waktu"><option value="live">Live · 5 min</option><option value="1h">Last hour</option><option value="6h">Last 6 hours</option><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="90d">Last 90 days</option><option value="180d">Last 180 days</option><option value="365d">Last 365 days</option></select></div></div>
+        <section id="page-content" aria-live="polite"></section>
+        <footer class="footer"><span>SignalDeck / Local Hardware Monitor</span><span>LOCAL-FIRST <i>•</i> No cloud telemetry <i>•</i> <span id="last-update">Belum ada data</span></span></footer>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/tuning.js?v=2.1.0" defer></script>
+  <script src="/static/app.js?v=2.1.0" defer></script>
+<script src="/ecosystem-nav.js?v=2.1.0" defer></script></body>
+</html>

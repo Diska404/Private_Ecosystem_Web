@@ -1,0 +1,8 @@
+{
+  "version": "2.1.0",
+  "services": {
+    "hub": {"name": "Ecosystem Hub", "port": 8764},
+    "ai": {"name": "Local AI Control Center", "port": 8765},
+    "signaldeck": {"name": "SignalDeck Hardware Monitor", "port": 8767}
+  }
+}

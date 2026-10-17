@@ -1,0 +1,65 @@
+{
+  "app": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "gateway_port": 8766,
+    "open_browser": true,
+    "telemetry_interval_ms": 500
+  },
+  "runtime": {
+    "llama_server_path": "",
+    "host": "127.0.0.1",
+    "port": 8080,
+    "model_path": "",
+    "context_size": 65536,
+    "gpu_layers": "auto",
+    "main_gpu": 0,
+    "tensor_split": "",
+    "cache_type_k": "q8_0",
+    "cache_type_v": "q8_0",
+    "flash_attention": true,
+    "mtp": false,
+    "batch_size": 2048,
+    "ubatch_size": 512,
+    "parallel": 1,
+    "fit": true,
+    "fit_target_mib": 1536,
+    "extra_args": ""
+  },
+  "models": {
+    "scan_paths": []
+  },
+  "clients": {
+    "hermes_log": "%LOCALAPPDATA%\\hermes\\logs\\llama-server.log",
+    "hermes_names": [
+      "hermes",
+      "hermes-agent"
+    ],
+    "openclaw_names": [
+      "openclaw",
+      "open-claw"
+    ]
+  },
+  "agent": {
+    "permission_profile": "safe",
+    "max_steps": 8,
+    "tool_timeout_seconds": 30
+  },
+  "charts": {
+    "preset": "telemetry-mix",
+    "dashboard": {
+      "generation": "wave",
+      "context": "gauge",
+      "gpu0": "wave",
+      "gpu1": "donut",
+      "ram": "bar"
+    },
+    "usage": {
+      "tokens": "wave",
+      "models": "bar",
+      "clients": "donut",
+      "runtime": "timeline",
+      "activity": "heatmap"
+    }
+  }
+}
