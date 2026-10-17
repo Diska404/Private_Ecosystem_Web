@@ -24,8 +24,8 @@ import service_manager
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
-def devpulse_url():
-    manifest = json.loads((DEVPULSE / 'apps/web/package.json').read_text(encoding='utf-8-sig'))
+def devpulse_url(app='web'):
+    manifest = json.loads((DEVPULSE / f'apps/{app}/package.json').read_text(encoding='utf-8-sig'))
     command = manifest['scripts']['dev']
     port = re.search(r'--port\s+(\d+)\b', command)
     if not port or not re.search(r'--hostname\s+127\.0\.0\.1\b', command):
@@ -36,8 +36,8 @@ def devpulse_url():
     return f'http://127.0.0.1:{number}/', number
 
 
-def devpulse_status(url, port):
-    """Identify the existing prototype through two read-only responses, without takeover."""
+def devpulse_status(url, port, audience='personal'):
+    """Check readiness, deny-only owner API and audience, without takeover."""
     try:
         with OPENER.open(url, timeout=1.5) as response:
             html = response.read(512_000).decode('utf-8', 'replace')
@@ -49,9 +49,13 @@ def devpulse_status(url, port):
         except urllib.error.HTTPError as response:
             try:
                 error = json.loads(response.read(8192))
-                return 'online' if response.code == 401 and isinstance(error, dict) and error.get('error') == 'unauthenticated' else 'conflict'
+                if response.code != 401 or not isinstance(error, dict) or error.get('error') != 'unauthenticated':
+                    return 'conflict'
             finally:
                 response.close()
+        with OPENER.open(url + 'api/site', timeout=1.5) as response:
+            identity = json.loads(response.read(8192))
+        return 'online' if isinstance(identity, dict) and identity.get('application') == 'DevPulse' and identity.get('audience') == audience else 'conflict'
     except (OSError, ValueError, TypeError):
         return 'conflict' if occupied(port) else 'offline'
 
@@ -66,10 +70,11 @@ def check_node():
         raise RuntimeError('DevPulse memerlukan Node.js 20.9 atau lebih baru.')
 
 
-def start_devpulse(url, port):
-    state = devpulse_status(url, port)
+def start_devpulse(url, port, audience='personal'):
+    label = 'DevPulse pribadi' if audience == 'personal' else 'DevPulse kreator'
+    state = devpulse_status(url, port, audience)
     if state == 'online':
-        print(f'[OK] DevPulse sudah berjalan: {url}', flush=True)
+        print(f'[OK] {label} sudah berjalan: {url}', flush=True)
         return
     if state != 'offline':
         raise RuntimeError(f'Port {port} ditempati layanan yang tidak dikenali sebagai DevPulse. Tidak diambil alih.')
@@ -77,15 +82,16 @@ def start_devpulse(url, port):
     if not (DEVPULSE / 'node_modules/next/dist/bin/next').is_file() and not (ROOT / 'node_modules/next/dist/bin/next').is_file():
         print('[SETUP] Memasang dependency DevPulse dari package-lock.json; internet mungkin diperlukan.', flush=True)
         subprocess.run([os.environ.get('COMSPEC', 'cmd.exe'), '/d', '/c', 'npm.cmd', 'ci'], cwd=DEVPULSE, check=True)
-    if devpulse_status(url, port) != 'offline':
+    if devpulse_status(url, port, audience) != 'offline':
         raise RuntimeError('Status port DevPulse berubah selama persiapan. Jalankan launcher kembali.')
-    subprocess.Popen([os.environ.get('COMSPEC', 'cmd.exe'), '/d', '/c', '.web-launcher\\RUN-DEVPULSE.bat'],
+    runner = '.web-launcher\\RUN-DEVPULSE.bat' if audience == 'personal' else '.web-launcher\\RUN-CREATOR.bat'
+    subprocess.Popen([os.environ.get('COMSPEC', 'cmd.exe'), '/d', '/c', runner],
                      cwd=ROOT, creationflags=subprocess.CREATE_NEW_CONSOLE)
-    print('[START] DevPulse sedang dimulai di terminal DevPulse. Tunggu sampai siap...', flush=True)
+    print(f'[START] {label} sedang dimulai di terminalnya. Tunggu sampai siap...', flush=True)
     deadline = time.monotonic() + 120
     while time.monotonic() < deadline:
-        if devpulse_status(url, port) == 'online':
-            print(f'[READY] DevPulse: {url}', flush=True)
+        if devpulse_status(url, port, audience) == 'online':
+            print(f'[READY] {label}: {url}', flush=True)
             return
         time.sleep(1)
     raise RuntimeError('DevPulse belum siap dalam 120 detik. Periksa terminal DevPulse; proses tidak dipaksa berhenti.')
@@ -94,36 +100,41 @@ def start_devpulse(url, port):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--no-browser', action='store_true', help='Start/check without opening browser tabs')
-    parser.add_argument('--status', action='store_true', help='Only inspect all four services')
+    parser.add_argument('--status', action='store_true', help='Only inspect all five services')
     args = parser.parse_args(argv)
     if sys.platform != 'win32':
         raise RuntimeError('Launcher BAT gabungan ini khusus Windows.')
     services = registry()
-    url, port = devpulse_url()
-    if port in {item['port'] for item in services.values()}:
-        raise RuntimeError('Port DevPulse harus berbeda dari port ketiga aplikasi ekosistem.')
+    portfolios = [('personal', *devpulse_url('web')), ('creator', *devpulse_url('creator'))]
+    ports = [item['port'] for item in services.values()] + [item[2] for item in portfolios]
+    if len(ports) != len(set(ports)):
+        raise RuntimeError('Kelima aplikasi harus memakai port yang berbeda.')
     print('PRIVATE WEB - ECOSYSTEM + DEVPULSE', flush=True)
     if args.status:
         for key, item in services.items():
             print(f'{key:12} {probe(item)["state"]:10} {item["url"]}', flush=True)
-        print(f'DevPulse     {devpulse_status(url, port):10} {url}', flush=True)
+        for audience, url, port in portfolios:
+            print(f'{audience:12} {devpulse_status(url, port, audience):10} {url}', flush=True)
         return 0
     # Preflight before starting anything: no replacement of old or unknown listeners.
     for key, item in services.items():
         current = probe(item)
         if current['state'] not in ('online', 'offline'):
             raise RuntimeError(f'{key}: {current["state"]} pada port {item["port"]}. Tutup proses pemilik secara manual.')
-    if devpulse_status(url, port) == 'conflict':
-        raise RuntimeError(f'Konflik port DevPulse {port}. Tidak menghentikan proses pemilik.')
-    if devpulse_status(url, port) == 'offline':
-        check_node()
+    for audience, url, port in portfolios:
+        state = devpulse_status(url, port, audience)
+        if state == 'conflict':
+            raise RuntimeError(f'Konflik port DevPulse {audience} {port}. Tidak menghentikan proses pemilik.')
+        if state == 'offline':
+            check_node()
     if service_manager.main(['start', 'all', '--no-browser']) != 0:
         return 1
-    start_devpulse(url, port)
-    print('\n[SIAP] Keempat web berjalan. Menutup browser tidak menghentikan server.', flush=True)
-    print('DevPulse: Ctrl+C pada terminal DevPulse. Ecosystem: KELOLA-EKOSISTEM.bat > Stop.', flush=True)
+    for audience, url, port in portfolios:
+        start_devpulse(url, port, audience)
+    print('\n[SIAP] Kelima web berjalan. Menutup browser tidak menghentikan server.', flush=True)
+    print('Dua portofolio: Ctrl+C pada terminal masing-masing. Ecosystem: KELOLA-EKOSISTEM.bat > Stop.', flush=True)
     if not args.no_browser:
-        for address in [item['url'] for item in services.values()] + [url]:
+        for address in [item['url'] for item in services.values()] + [item[1] for item in portfolios]:
             webbrowser.open_new_tab(address)
     return 0
 

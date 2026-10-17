@@ -36,6 +36,10 @@ Run `START-EKOSISTEM.bat` inside the ecosystem folder for its three services. Se
 
 The owner confirmed this account split: **Diska404 for college**; **RaizeiID for personal, YouTube and GFL2 Bahasa Indonesia**. Personal repositories use their own repository-local Git identity and credential username. No personal destination repository has been selected or uploaded in this checkpoint. Do not copy access tokens into repository files, remote URLs or chat.
 
+The later instruction changes **subsequent update/commit identity to RaizeiID even for these two existing Diska404 repositories**, to credit contributions to the personal account. RaizeiID now has collaborator Write access on the two specified repositories (no admin role). Current local author is RaizeiID with `275431878+RaizeiID@users.noreply.github.com`, and the remote/credential username selects RaizeiID. Ownership stays Diska404; no global Git identity was changed. Public Git history can correlate these project identities.
+
+The combined launcher now starts five services: the three ecosystem applications and both DevPulse audiences (personal 3100; creator 3101). See the bundled `workspace-launcher/README.md`. No AI, hardware-monitoring or tuning application behavior changed in this update.
+
 ## Release boundary
 
 This is source versioning, not web hosting or a production release. Servers remain loopback-only. Hardware Tuning Studio remains a draft editor without physical hardware writes. Long-running sensor/driver/hotplug validation remains open.

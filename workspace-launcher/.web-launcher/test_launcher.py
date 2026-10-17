@@ -19,8 +19,16 @@ class LauncherTests(unittest.TestCase):
         return urllib.error.HTTPError('http://127.0.0.1:3100/api/owner/check', 401, 'Unauthorized', {}, io.BytesIO(payload))
 
     def test_identifies_devpulse_with_protected_api(self):
-        with patch.object(launcher.OPENER, 'open', side_effect=[self.root_response(), self.denied()]):
+        with patch.object(launcher.OPENER, 'open', side_effect=[self.root_response(), self.denied(), io.BytesIO(b'{"application":"DevPulse","audience":"personal"}')]):
             self.assertEqual(launcher.devpulse_status('http://127.0.0.1:3100/', 3100), 'online')
+
+    def test_creator_and_personal_are_not_interchangeable(self):
+        with patch.object(launcher.OPENER, 'open', side_effect=[self.root_response(), self.denied(), io.BytesIO(b'{"application":"DevPulse","audience":"personal"}')]):
+            self.assertEqual(launcher.devpulse_status('http://127.0.0.1:3101/', 3101, 'creator'), 'conflict')
+
+    def test_creator_identity_is_recognized(self):
+        with patch.object(launcher.OPENER, 'open', side_effect=[self.root_response(), self.denied(), io.BytesIO(b'{"application":"DevPulse","audience":"creator"}')]):
+            self.assertEqual(launcher.devpulse_status('http://127.0.0.1:3101/', 3101, 'creator'), 'online')
 
     def test_unrelated_web_server_is_conflict(self):
         with patch.object(launcher.OPENER, 'open', return_value=self.root_response('Other app')):
